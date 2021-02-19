@@ -17,13 +17,13 @@ def get_arguments():
     parser.add_argument('-p', '--patience', type=int, default=16, help='早停')
     parser.add_argument('-w', '--workers', type=int, default=4, help='读数据集的线程数')
     parser.add_argument('-c', '--cuda', default=0)
-    parser.add_argument('-s', '--step', default=36, help='时间步长，目前还没用')
-    parser.add_argument('-m', '--model', default='convlstm', help='模型名称')
-    parser.add_argument('--infer', action='store_true', help='推理')
+    # parser.add_argument('-s', '--step', default=36, help='时间步长，目前还没用')
+    # parser.add_argument('-m', '--model', default='convlstm', help='模型名称')
+    # parser.add_argument('--infer', action='store_true', help='推理')
     parser.add_argument('--debug', action='store_true', help='调试模式')
     parser.add_argument('--small-dataset',
                         action='store_true', dest='small_dataset', help='小数据集调试用')
-    parser.add_argument('--model-path', type=str, default='output/model.tar.gz', help='训练模型保存路径')
+    # parser.add_argument('--model-path', type=str, default='output/model.tar.gz', help='训练模型保存路径')
     return parser.parse_args()
 
 
