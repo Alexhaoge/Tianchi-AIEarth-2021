@@ -23,7 +23,7 @@ class EarlyStopping:
         self.enable_stop = not no_stop
 
     def __call__(self, val_loss, model, filename):
-        is_best = bool(val_loss < self.best_loss)
+        is_best = bool(val_loss - self.best_loss > 1e-3)
         if is_best:
             self.best_loss = val_loss
             self.__save_checkpoint(model, filename)
