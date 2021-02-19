@@ -11,7 +11,7 @@ from model.model import Solution
 
 def get_arguments():
     parser = arg.ArgumentParser()
-    parser.add_argument('-e', '--epoch', type=int, default=3)
+    parser.add_argument('-e', '--epoch', type=int, default=200)
     parser.add_argument('-b', '--batch', type=int, default=16)
     parser.add_argument('-l', '--lr', type=float, default=0.001)
     parser.add_argument('-p', '--patience', type=int, default=16, help='早停')
