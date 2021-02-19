@@ -9,7 +9,8 @@ ADD . /
 WORKDIR /
 
 ## 安装依赖
-RUN pip install numpy pandas xarray netCDF4
+RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/ \
+    && pip install numpy pandas xarray netCDF4
 
 ## 镜像启动后统一执行 sh run.sh
 CMD ["sh", "run.sh"]
