@@ -9,7 +9,7 @@ ADD . /
 WORKDIR /
 
 ## 安装依赖
-RUN pip install -y numpy pandas xarray netCDF4
+RUN pip install numpy pandas xarray netCDF4
 
 ## 镜像启动后统一执行 sh run.sh
 CMD ["sh", "run.sh"]
