@@ -14,23 +14,28 @@ def get_arguments():
     parser.add_argument('-e', '--epoch', type=int, default=200)
     parser.add_argument('-b', '--batch', type=int, default=16)
     parser.add_argument('-l', '--lr', type=float, default=0.001)
-    parser.add_argument('-p', '--patience', type=int, default=16, help='早停')
+    parser.add_argument('-p', '--patience', type=int, default=10, help='早停')
     parser.add_argument('-w', '--workers', type=int, default=4, help='读数据集的线程数')
     parser.add_argument('-c', '--cuda', default=0)
     # parser.add_argument('-s', '--step', default=36, help='时间步长，目前还没用')
-    # parser.add_argument('-m', '--model', default='convlstm', help='模型名称')
+    parser.add_argument('-m', '--model', default='convlstm', help='模型名称')
     # parser.add_argument('--infer', action='store_true', help='推理')
     parser.add_argument('--debug', action='store_true', help='调试模式')
     parser.add_argument('--small-dataset',
                         action='store_true', dest='small_dataset', help='小数据集调试用')
-    # parser.add_argument('--model-path', type=str, default='output/model.tar.gz', help='训练模型保存路径')
+    parser.add_argument('--model-path', type=str, default='output/model.tar.gz', help='训练模型保存路径')
     return parser.parse_args()
 
 
 def predict(
     trainer: Trainer,
+    model_path: str,
     debug: bool = False
 ):
+    map_location = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+    trainer.model.load_state_dict(torch.load(model_path, map_location))
+    print('successully load model checkpoints')
+    print('load model succeed')  
     test_dir = 'tcdata/enso_round1_test_20210201'
     if not debug:
         test_dir = '/' + test_dir
@@ -58,10 +63,11 @@ if __name__ == '__main__':
         batch_size=args.batch, shuffle=False, num_workers=args.workers
     )
     soda_loader = DataLoader(
-        dataset=get_dataset('soda', args.debug, args.small_dataset),
+        dataset=get_dataset('soda', args.debug, False),
         batch_size=50, shuffle=False, num_workers=args.workers
     )
     trainer = Trainer(
+        model_path=args.model_path,
         model=Solution(device), 
         device=device, 
         train_loader=cmip_loader,
@@ -72,4 +78,4 @@ if __name__ == '__main__':
         # lossf=NegativeScore(device=device)
     )
     trainer.fit()
-    predict(trainer, args.debug)
+    predict(trainer, args.model_path, args.debug)

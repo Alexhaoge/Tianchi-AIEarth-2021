@@ -14,7 +14,7 @@ class EarlyStopping:
     Early stops the training if validation loss doesn't improve after a given patience
     """
 
-    def __init__(self, verbose: bool = False, patience: int = 16, no_stop: bool = False):
+    def __init__(self, verbose: bool = True, patience: int = 16, no_stop: bool = False):
         self.verbose = verbose
         self.patience = patience
         self.best_loss = float('inf')
@@ -22,13 +22,13 @@ class EarlyStopping:
         self.isToStop = False
         self.enable_stop = not no_stop
 
-    def __call__(self, val_loss, model, optimizer, epoch, filename):
+    def __call__(self, val_loss, model, filename):
         is_best = bool(val_loss < self.best_loss)
         if is_best:
             self.best_loss = val_loss
             self.__save_checkpoint(model, filename)
             if self.verbose:
-                print(filename)
+                print('=> Saving a new best: ', filename)
             self.counter = 0
         elif self.enable_stop:
             self.counter += 1
@@ -40,8 +40,6 @@ class EarlyStopping:
 
     def __save_checkpoint(self, model, filename):
         torch.save(model.state_dict(), filename)
-        if self.verbose:
-            print('=> Saving a new best')
 
 
 # def plot(data, columns_name, x_label, y_label, title, inline=False):

@@ -13,15 +13,17 @@ class Trainer:
         self, 
         model: nn.Module,
         device: torch.device,
+        model_path: str,
         train_loader: data.DataLoader = None,
         val_loader: data.DataLoader = None,
         lr: float = 0.001,
         epoch: int = 100,
         patience: int = 16,
-        lossf: nn.Module = RMSELoss()
+        lossf: nn.Module = RMSELoss(),
     ) -> None:
         self.train_loader = train_loader
         self.val_loader = val_loader
+        self.model_path = model_path
         self.model = model.to(device)
         self.opt = RMSprop(self.model.parameters(), lr=lr)
         self.scheduler = ExponentialLR(optimizer=self.opt, gamma=0.94)
@@ -39,8 +41,7 @@ class Trainer:
             train_losses.append(train_loss)
             val_losses.append(val_loss)
             print(f'Epoch:{epoch}/{self.epochs} loss:{train_loss:.4f} val_loss:{val_loss:.4f}')
-            filename = 'output/' + 'model' + '.tar.gz'
-            self.early(val_loss, self.model, self.opt, epoch, filename)
+            self.early(val_loss, self.model, self.model_path)
             if self.early.isToStop:
                 print("=> Stopped")
                 break
@@ -70,6 +71,7 @@ class Trainer:
             for id, (inputs, target) in enumerate(self.val_loader):
                 inputs, target = inputs.to(self.device), target.to(self.device)
                 output = self.model(inputs)
+                assert torch.isnan(output).sum().item() == 0
                 loss_sum += self.val_lossf(output, target).item()
         return loss_sum/len(self.val_loader)
 
@@ -82,6 +84,7 @@ class Trainer:
             x = torch.Tensor(inputs).reshape(1, 12, 24, 72, 4)\
                     .permute(0, 1, 4, 2, 3).to(self.device)
             output = self.model.infer(x)
+            assert torch.isnan(output).sum().item() == 0
         return output.view(-1).cpu().numpy()
 
 
