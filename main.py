@@ -75,7 +75,7 @@ if __name__ == '__main__':
         lr=args.lr,
         epoch=args.epoch,
         patience=args.patience,
-        # lossf=NegativeScore(device=device)
+        lossf='score'
     )
     trainer.fit()
     predict(trainer, args.model_path, args.debug)

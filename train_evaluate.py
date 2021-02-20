@@ -19,7 +19,7 @@ class Trainer:
         lr: float = 0.001,
         epoch: int = 100,
         patience: int = 16,
-        lossf: nn.Module = RMSELoss(),
+        lossf: str = 'rmse', 
     ) -> None:
         self.train_loader = train_loader
         self.val_loader = val_loader
@@ -30,8 +30,9 @@ class Trainer:
         self.device = device
         self.early = EarlyStopping(patience=patience)
         self.epochs = epoch
-        self.lossf = lossf
         self.val_lossf = NegativeScore(self.device)
+        assert lossf in ['rmse', 'score']
+        self.lossf = RMSELoss() if lossf == 'rmse' else self.val_lossf
 
     def fit(self):
         train_losses, val_losses = [], []

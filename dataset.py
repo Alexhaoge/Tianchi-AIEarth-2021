@@ -45,9 +45,9 @@ def get_dataset(
     elif name == 'cmip6':
         train = train[dict(year=slice(2265, 4645))]
         label = label[dict(year=slice(2265, 4645))]
-    if small:
-        train = train[dict(year=slice(0, 50))]
-        label = label[dict(year=slice(0, 50))]
+    if small and name.startswith('cmip'):
+        train = train[dict(year=slice(0, 300))]
+        label = label[dict(year=slice(0, 300))]
     return  TensorDataset(
         torch.Tensor(train.to_array().data).permute(1,2,0,3,4),
         torch.Tensor(label.to_array().data).squeeze()
