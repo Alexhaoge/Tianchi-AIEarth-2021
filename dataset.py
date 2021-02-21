@@ -7,7 +7,8 @@ from torch.utils.data import TensorDataset
 def get_dataset(
     name:str, 
     debug_mode: bool = False, 
-    small: bool = False,
+    small: int = -1,
+    fillna: int = True
 ) -> TensorDataset:
     """
     NOTE:
@@ -21,8 +22,8 @@ def get_dataset(
         name: Dataset name, must be one of 
             ['cmip', 'cmip5', 'cmip6', 'soda']
         debug_model: if debug mode is on, the path for dataset differs
-        small: slice the first 50 sample and create a tiny dataset,
-            helpful for local debugging
+        small: random sample and create a tiny dataset,
+            helpful for local debugging. Default -1 means using the whole dataset
     
     Returns:
         torch.utils.data.Dataset
@@ -45,9 +46,13 @@ def get_dataset(
     elif name == 'cmip6':
         train = train[dict(year=slice(2265, 4645))]
         label = label[dict(year=slice(2265, 4645))]
-    if small and name.startswith('cmip'):
-        train = train[dict(year=slice(0, 300))]
-        label = label[dict(year=slice(0, 300))]
+    if small > 0:
+        from random import sample
+        sample_list = sample(np.arange(train.sizes['year']).tolist(), small)
+        train = train[dict(year=sample_list)]
+        label = label[dict(year=sample_list)]
+    if fillna:
+        train = train.fillna(0)
     return  TensorDataset(
         torch.Tensor(train.to_array().data).permute(1,2,0,3,4),
         torch.Tensor(label.to_array().data).squeeze()

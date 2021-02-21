@@ -19,7 +19,8 @@ class Trainer:
         lr: float = 0.001,
         epoch: int = 100,
         patience: int = 16,
-        lossf: str = 'rmse', 
+        lossf: str = 'score',
+        val_lossf: str = 'score',
     ) -> None:
         self.train_loader = train_loader
         self.val_loader = val_loader
@@ -30,12 +31,16 @@ class Trainer:
         self.device = device
         self.early = EarlyStopping(patience=patience)
         self.epochs = epoch
-        self.val_lossf = NegativeScore(self.device)
         assert lossf in ['rmse', 'score']
-        self.lossf = RMSELoss() if lossf == 'rmse' else self.val_lossf
+        assert val_lossf in ['rmse', 'score']
+        self.lossf = RMSELoss() if lossf == 'rmse' else NegativeScore(self.device)
+        self.val_lossf = RMSELoss() if lossf == 'rmse' else NegativeScore(self.device)
 
     def fit(self):
         train_losses, val_losses = [], []
+        _ = torch.isnan(self.train_loader.dataset.tensors[0]).sum().item()
+        if _ > 0:
+            print('Input exists NaN {}'.format(_))
         for epoch in range(1, self.epochs+1):
             train_loss = self.__train()
             val_loss = self.__eval()
@@ -55,7 +60,7 @@ class Trainer:
         for id, (inputs, target) in enumerate(self.train_loader):
             inputs, target = inputs.to(self.device), target.to(self.device)
             output = self.model(inputs)
-            loss = self.lossf(output, target)
+            loss = self.lossf(output, target[:,12:])
             self.opt.zero_grad()
             loss.backward()
             self.opt.step()
@@ -73,7 +78,7 @@ class Trainer:
                 inputs, target = inputs.to(self.device), target.to(self.device)
                 output = self.model(inputs)
                 assert torch.isnan(output).sum().item() == 0
-                loss_sum += self.val_lossf(output, target).item()
+                loss_sum += self.val_lossf(output, target[:,12:]).item()
         return loss_sum/len(self.val_loader)
 
     def eval(self) -> float:

@@ -28,9 +28,7 @@ class NegativeScore(nn.Module):
         )
 
     def forward(self, yhat, y):
-        assert yhat.dim() == 2 and \
-            tuple(yhat.shape) == tuple(y.shape) \
-            and yhat.shape[1] >= 24
+        assert yhat.dim() == 2 and tuple(yhat.shape) == tuple(y.shape) and yhat.shape[1] >= 24
         p = yhat[:, -24:]
         r = y[:, -24:]
         rmse = self.RMSE(p, r)
