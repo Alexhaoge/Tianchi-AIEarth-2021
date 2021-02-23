@@ -7,6 +7,8 @@ from torch.utils import data
 from numpy import ndarray
 # from datetime import datetime
 from model.loss import LossFactory
+import time
+
 
 class Trainer:
     def __init__(
@@ -35,6 +37,7 @@ class Trainer:
         self.val_lossf = LossFactory(val_lossf, self.device)
 
     def fit(self):
+        print('start fitting at '+time.strftime('%d-%H:%I:%M:%S', time.localtime()))
         train_losses, val_losses = [], []
         _ = torch.isnan(self.train_loader.dataset.tensors[0]).sum().item()
         if _ > 0:
@@ -44,7 +47,10 @@ class Trainer:
             val_loss = self.__eval()
             train_losses.append(train_loss)
             val_losses.append(val_loss)
-            print(f'Epoch:{epoch}/{self.epochs} loss:{train_loss:.4f} val_loss:{val_loss:.4f}')
+            print(f'Epoch:{epoch}/{self.epochs} \
+                    loss:{train_loss:.4f} \
+                    val_loss:{val_loss:.4f} \
+                    at ' + time.strftime('%d-%H:%I:%M:%S', time.localtime()))
             self.early(val_loss, self.model, self.model_path)
             if self.early.isToStop:
                 print("=> Stopped")

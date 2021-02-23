@@ -49,7 +49,7 @@ def predict(
             np.save('result/' + i, trainer.infer(x))
 
 
-if __name__ == '__main__':    
+if __name__ == '__main__':
     args = get_arguments()
     os.environ["CUDA_VISIBLE_DEVICES"]=str(args.cuda)
     if torch.cuda.is_available():

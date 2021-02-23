@@ -7,6 +7,8 @@ def LossFactory(name: str, device: torch.device):
         return RMSELoss()
     elif name == 'mse':
         return nn.MSELoss()
+    elif name == 'l1':
+        return nn.L1Loss()
     elif name == 'score':
         return NegativeScore(device)
     else:
