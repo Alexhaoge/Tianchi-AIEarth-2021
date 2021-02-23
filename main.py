@@ -27,6 +27,7 @@ def get_arguments():
     parser.add_argument('--model-path', type=str, default='output/model.tar.gz', help='训练模型保存路径')
     parser.add_argument('--loss', type=str, default='rmse', help='训练用损失函数')
     parser.add_argument('--val-loss', type=str, default='score', help='验证用损失函数')
+    parser.add_argument('--no-stop', action='store_true', help='禁用早停')
     return parser.parse_args()
 
 
@@ -77,7 +78,8 @@ if __name__ == '__main__':
         epoch=args.epoch,
         patience=args.patience,
         lossf=args.loss,
-        val_lossf=args.val_loss
+        val_lossf=args.val_loss,
+        no_stop=args.no_stop
     )
     trainer.fit()
     predict(trainer, args.model_path, args.debug)

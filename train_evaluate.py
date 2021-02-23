@@ -23,6 +23,7 @@ class Trainer:
         patience: int = 16,
         lossf: str = 'score',
         val_lossf: str = 'score',
+        no_stop: bool = False
     ) -> None:
         self.train_loader = train_loader
         self.val_loader = val_loader
@@ -31,7 +32,7 @@ class Trainer:
         self.opt = RMSprop(self.model.parameters(), lr=lr)
         self.scheduler = ExponentialLR(optimizer=self.opt, gamma=0.94)
         self.device = device
-        self.early = EarlyStopping(patience=patience)
+        self.early = EarlyStopping(patience=patience, no_stop=no_stop)
         self.epochs = epoch
         self.lossf =  LossFactory(lossf, self.device)
         self.val_lossf = LossFactory(val_lossf, self.device)
