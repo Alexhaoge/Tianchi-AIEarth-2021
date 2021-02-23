@@ -1,6 +1,18 @@
 import torch
 import torch.nn as nn
 
+
+def LossFactory(name: str, device: torch.device):
+    if name == 'rmse':
+        return RMSELoss()
+    elif name == 'mse':
+        return nn.MSELoss()
+    elif name == 'score':
+        return NegativeScore(device)
+    else:
+        raise TypeError('Invalid loss function type')
+
+
 class RMSELoss(nn.Module):
     def __init__(self, eps=1e-6):
         super().__init__()

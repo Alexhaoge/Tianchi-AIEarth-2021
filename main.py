@@ -13,18 +13,19 @@ def get_arguments():
     parser = arg.ArgumentParser()
     parser.add_argument('-e', '--epoch', type=int, default=100)
     parser.add_argument('-b', '--batch', type=int, default=16)
-    parser.add_argument('-l', '--lr', type=float, default=0.001)
+    parser.add_argument('-l', '--lr', type=float, default=0.005)
     parser.add_argument('-p', '--patience', type=int, default=16, help='早停')
     parser.add_argument('-w', '--workers', type=int, default=4, help='读数据集的线程数')
     parser.add_argument('-c', '--cuda', default=0)
     # parser.add_argument('-t', '--timestep', default=36, help='时间步长，目前还没用')
-    parser.add_argument('-m', '--model', default='convlstm', help='模型名称')
+    parser.add_argument('-m', '--model', default=2, type=int,
+                        help='模型版本 1:错的ConvLSTM  2:对的ConvLSTM')
     # parser.add_argument('--infer', action='store_true', help='推理')
     parser.add_argument('--debug', action='store_true', help='调试模式')
     parser.add_argument('-s', '--small-dataset', type=int, default=-1,
                         dest='small_dataset', help='小数据集调试用')
     parser.add_argument('--model-path', type=str, default='output/model.tar.gz', help='训练模型保存路径')
-    parser.add_argument('--loss', type=str, default='score', help='训练用损失函数')
+    parser.add_argument('--loss', type=str, default='rmse', help='训练用损失函数')
     parser.add_argument('--val-loss', type=str, default='score', help='验证用损失函数')
     return parser.parse_args()
 
@@ -57,8 +58,7 @@ if __name__ == '__main__':
     else:
         device = torch.device('cpu')
         device_descr = 'CPU'
-    print(f'RUN MODEL: {args.model.upper()}, Device: {device_descr}')
-    print(f'Settings: {args}')
+    print(f'Device: {device_descr}, Settings: {args}')
     cmip_loader = DataLoader(
         dataset=get_dataset('cmip', args.debug, args.small_dataset),
         batch_size=args.batch, shuffle=False, num_workers=args.workers,
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     )
     trainer = Trainer(
         model_path=args.model_path,
-        model=Solution(device), 
+        model=Solution(args.model, device=device), 
         device=device, 
         train_loader=cmip_loader,
         val_loader=soda_loader,

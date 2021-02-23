@@ -30,7 +30,7 @@ conda activate aiearth
 ```
 5. 调试&运行
 ```
-python main.py --debug --small-dataset
+python main.py --debug --small-dataset 500
 ```
 参数格式参考`python main.py --help`
 

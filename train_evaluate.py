@@ -6,7 +6,7 @@ from utils import EarlyStopping
 from torch.utils import data
 from numpy import ndarray
 # from datetime import datetime
-from model.loss import RMSELoss, NegativeScore
+from model.loss import LossFactory
 
 class Trainer:
     def __init__(
@@ -31,10 +31,8 @@ class Trainer:
         self.device = device
         self.early = EarlyStopping(patience=patience)
         self.epochs = epoch
-        assert lossf in ['rmse', 'score']
-        assert val_lossf in ['rmse', 'score']
-        self.lossf = RMSELoss() if lossf == 'rmse' else NegativeScore(self.device)
-        self.val_lossf = RMSELoss() if lossf == 'rmse' else NegativeScore(self.device)
+        self.lossf =  LossFactory(lossf, self.device)
+        self.val_lossf = LossFactory(val_lossf, self.device)
 
     def fit(self):
         train_losses, val_losses = [], []
