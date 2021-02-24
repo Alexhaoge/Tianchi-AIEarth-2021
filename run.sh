@@ -1,5 +1,5 @@
 mkdir result
 mkdir output
-python main.py -e 100 --loss rmse --val-loss score --no-stop
+python main.py -e 200 -l 0.01 -b 256 --loss score --val-loss score --refit
 # python main.py --infer
 python zip.py

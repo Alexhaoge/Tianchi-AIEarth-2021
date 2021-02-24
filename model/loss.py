@@ -50,4 +50,4 @@ class NegativeScore(nn.Module):
         mr = torch.mean(r, 0, True)
         fz = ((p-mp)*(r-mr)).sum(0)
         fm = torch.sqrt(((p-mp)**2).sum(0)+((r-mr)**2).sum(0))
-        return rmse - (self.ln*fz/fm).sum()
+        return rmse - (self.ln*fz/(fm+self.RMSE.eps)).sum()

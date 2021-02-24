@@ -1,4 +1,4 @@
-from torch.optim import RMSprop
+from torch.optim import RMSprop, Adam
 from torch.optim.lr_scheduler import ExponentialLR
 from torch import nn
 import torch
@@ -29,7 +29,8 @@ class Trainer:
         self.val_loader = val_loader
         self.model_path = model_path
         self.model = model.to(device)
-        self.opt = RMSprop(self.model.parameters(), lr=lr)
+        self.opt = Adam(self.model.parameters(), lr=lr)
+        # self.opt = RMSprop(self.model.parameters(), lr=lr)
         self.scheduler = ExponentialLR(optimizer=self.opt, gamma=0.94)
         self.device = device
         self.early = EarlyStopping(patience=patience, no_stop=no_stop)
@@ -69,8 +70,8 @@ class Trainer:
             self.opt.zero_grad()
             loss.backward()
             self.opt.step()
-            if id % 2:
-                self.scheduler.step()
+            # if id % 16 == 1:
+            #     self.scheduler.step()
             epoch_loss += loss.item()
         return epoch_loss/len(self.train_loader)
 
@@ -97,6 +98,14 @@ class Trainer:
             output = self.model.infer(x)
             assert torch.isnan(output).sum().item() == 0
         return output.view(-1).cpu().numpy()
+    
+    def refit_refresh(self, epoch, lr) -> None:
+        print('start to refresh trainer for refit')
+        self.epochs = epoch
+        self.opt = Adam(self.model.parameters(), lr=lr)
+        self.scheduler = ExponentialLR(optimizer=self.opt, gamma=0.94)
+        self.early.counter = 0
+        self.early.isToStop = False
 
 
 # def cross_validation(

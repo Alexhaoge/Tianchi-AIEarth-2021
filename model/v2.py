@@ -38,11 +38,13 @@ class SolutionV2(nn.Module):
             stride=(1, 1, 1), # 有必要减少原通道数吗 比如211/411/611
             padding=(0, 1, 1),
         )
+        self.tanh = nn.Tanh()
         self.dropout = nn.Dropout(dropout_rate)
         self.fc = nn.Linear(
             in_features=(24//pool_kernel[0])*(72//pool_kernel[1])*hidden_dim,
             out_features=1
         )
+        
 
     def forward(self, _input: torch.Tensor) -> torch.Tensor:
         out = self.convlstm(_input[:, :12, :, :, :])[
@@ -56,7 +58,7 @@ class SolutionV2(nn.Module):
             out2[:, i, :, :, :] = self.pool(out[:, i, :, :, :])
         # -> (B, 12, hidden_dim, 24//pk[0], 72//pk[1])
         out2 = self.conv3d(out2)  # (B, 24, hidden_dim, 24//pk[0], 72//pk[1])
-        out2 = out2.flatten(start_dim=2)  # (B, 24, -1)
+        out2 = self.dropout(self.tanh(out2)).flatten(start_dim=2)  # (B, 24, -1)
         out2 = self.dropout(self.fc(out2))  # (B, 24, 1)
         return out2.flatten(start_dim=1)  # (B, 24)
 

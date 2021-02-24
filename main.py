@@ -28,6 +28,7 @@ def get_arguments():
     parser.add_argument('--loss', type=str, default='rmse', help='训练用损失函数')
     parser.add_argument('--val-loss', type=str, default='score', help='验证用损失函数')
     parser.add_argument('--no-stop', action='store_true', help='禁用早停')
+    parser.add_argument('--refit', action='store_true', help='SODA重训练')
     return parser.parse_args()
 
 
@@ -77,7 +78,7 @@ if __name__ == '__main__':
     )
     soda_loader = DataLoader(
         dataset=get_dataset('soda', debug_mode=args.debug, small=-1),
-        batch_size=100, shuffle=False, num_workers=args.workers
+        batch_size=args.batch, shuffle=False, num_workers=args.workers
     )
     trainer = Trainer(
         model_path=args.model_path,
@@ -93,4 +94,8 @@ if __name__ == '__main__':
         no_stop=args.no_stop
     )
     trainer.fit()
+    if args.refit:
+        trainer.refit_refresh(50, 0.0001)
+        trainer.train_loader = soda_loader
+        trainer.fit()
     predict(trainer, args.model_path, args.debug)
