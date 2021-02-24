@@ -5,7 +5,7 @@ import argparse as arg
 from train_evaluate import Trainer
 from dataset import get_dataset
 import torch
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, random_split
 from model.model import Solution
 
 
@@ -60,20 +60,31 @@ if __name__ == '__main__':
         device = torch.device('cpu')
         device_descr = 'CPU'
     print(f'Device: {device_descr}, Settings: {args}')
-    cmip_loader = DataLoader(
-        dataset=get_dataset('cmip', args.debug, args.small_dataset),
-        batch_size=args.batch, shuffle=False, num_workers=args.workers,
+    cmip = get_dataset('cmip', args.debug, args.small_dataset)
+    cmip_train, cmip_val = random_split(
+        cmip, [int(len(cmip)*0.8), len(cmip)-int(len(cmip)*0.8)])
+    # cmip_loader = DataLoader(
+    #     dataset=get_dataset('cmip', args.debug, args.small_dataset),
+    #     batch_size=args.batch, shuffle=False, num_workers=args.workers,
+    # )
+    cmip_train_loader = DataLoader(
+        dataset=cmip_train, batch_size=args.batch,
+        shuffle=False, num_workers=args.workers,
+    )
+    cmip_val_loader = DataLoader(
+        dataset=cmip_val, batch_size=args.batch,
+        shuffle=False, num_workers=args.workers,
     )
     soda_loader = DataLoader(
         dataset=get_dataset('soda', debug_mode=args.debug, small=-1),
-        batch_size=50, shuffle=False, num_workers=args.workers
+        batch_size=100, shuffle=False, num_workers=args.workers
     )
     trainer = Trainer(
         model_path=args.model_path,
         model=Solution(args.model, device=device), 
         device=device, 
-        train_loader=cmip_loader,
-        val_loader=soda_loader,
+        train_loader=cmip_train_loader,
+        val_loader=cmip_val_loader,
         lr=args.lr,
         epoch=args.epoch,
         patience=args.patience,

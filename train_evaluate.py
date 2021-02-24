@@ -40,9 +40,9 @@ class Trainer:
     def fit(self):
         print('start fitting at '+time.strftime('%d-%H:%I:%M:%S', time.localtime()))
         train_losses, val_losses = [], []
-        _ = torch.isnan(self.train_loader.dataset.tensors[0]).sum().item()
-        if _ > 0:
-            print('Input exists NaN {}'.format(_))
+        # _ = torch.isnan(self.train_loader.dataset.tensors[0]).sum().item()
+        # if _ > 0:
+        #     print('Input exists NaN {}'.format(_))
         for epoch in range(1, self.epochs+1):
             train_loss = self.__train()
             val_loss = self.__eval()
