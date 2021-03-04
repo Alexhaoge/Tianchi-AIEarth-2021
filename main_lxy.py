@@ -167,7 +167,6 @@ def train(model):
 
 model= simpleSpatailTimeNN()
 model_trained=train(model)
-x=np.load('tcdata/enso_round1_test_20210201/test_0144-01-12.npy')
 def predict_test(x):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     test_sst = x[:,:,:,0] 
