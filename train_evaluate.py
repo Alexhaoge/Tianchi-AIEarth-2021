@@ -1,4 +1,4 @@
-from torch.optim import RMSprop
+from torch.optim import RMSprop, Adam
 from torch.optim.lr_scheduler import ExponentialLR
 from torch import nn
 import torch
@@ -6,7 +6,9 @@ from utils import EarlyStopping
 from torch.utils import data
 from numpy import ndarray
 # from datetime import datetime
-from model.loss import RMSELoss, NegativeScore
+from model.loss import LossFactory
+import time
+
 
 class Trainer:
     def __init__(
@@ -19,28 +21,38 @@ class Trainer:
         lr: float = 0.001,
         epoch: int = 100,
         patience: int = 16,
-        lossf: nn.Module = RMSELoss(),
+        lossf: str = 'score',
+        val_lossf: str = 'score',
+        no_stop: bool = False
     ) -> None:
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.model_path = model_path
         self.model = model.to(device)
-        self.opt = RMSprop(self.model.parameters(), lr=lr)
+        self.opt = Adam(self.model.parameters(), lr=lr)
+        # self.opt = RMSprop(self.model.parameters(), lr=lr)
         self.scheduler = ExponentialLR(optimizer=self.opt, gamma=0.94)
         self.device = device
-        self.early = EarlyStopping(patience=patience)
+        self.early = EarlyStopping(patience=patience, no_stop=no_stop)
         self.epochs = epoch
-        self.lossf = lossf
-        self.val_lossf = NegativeScore(self.device)
+        self.lossf =  LossFactory(lossf, self.device)
+        self.val_lossf = LossFactory(val_lossf, self.device)
 
     def fit(self):
+        print('start fitting at '+time.strftime('%d-%H:%I:%M:%S', time.localtime()))
         train_losses, val_losses = [], []
+        # _ = torch.isnan(self.train_loader.dataset.tensors[0]).sum().item()
+        # if _ > 0:
+        #     print('Input exists NaN {}'.format(_))
         for epoch in range(1, self.epochs+1):
             train_loss = self.__train()
             val_loss = self.__eval()
             train_losses.append(train_loss)
             val_losses.append(val_loss)
-            print(f'Epoch:{epoch}/{self.epochs} loss:{train_loss:.4f} val_loss:{val_loss:.4f}')
+            print(f'Epoch:{epoch}/{self.epochs} \
+                    loss:{train_loss:.4f} \
+                    val_loss:{val_loss:.4f} \
+                    at ' + time.strftime('%d-%H:%I:%M:%S', time.localtime()))
             self.early(val_loss, self.model, self.model_path)
             if self.early.isToStop:
                 print("=> Stopped")
@@ -54,12 +66,12 @@ class Trainer:
         for id, (inputs, target) in enumerate(self.train_loader):
             inputs, target = inputs.to(self.device), target.to(self.device)
             output = self.model(inputs)
-            loss = self.lossf(output, target)
+            loss = self.lossf(output, target[:,12:])
             self.opt.zero_grad()
             loss.backward()
             self.opt.step()
-            if id % 2:
-                self.scheduler.step()
+            # if id % 16 == 1:
+            #     self.scheduler.step()
             epoch_loss += loss.item()
         return epoch_loss/len(self.train_loader)
 
@@ -72,7 +84,7 @@ class Trainer:
                 inputs, target = inputs.to(self.device), target.to(self.device)
                 output = self.model(inputs)
                 assert torch.isnan(output).sum().item() == 0
-                loss_sum += self.val_lossf(output, target).item()
+                loss_sum += self.val_lossf(output, target[:,12:]).item()
         return loss_sum/len(self.val_loader)
 
     def eval(self) -> float:
@@ -86,6 +98,14 @@ class Trainer:
             output = self.model.infer(x)
             assert torch.isnan(output).sum().item() == 0
         return output.view(-1).cpu().numpy()
+    
+    def refit_refresh(self, epoch, lr) -> None:
+        print('start to refresh trainer for refit')
+        self.epochs = epoch
+        self.opt = Adam(self.model.parameters(), lr=lr)
+        self.scheduler = ExponentialLR(optimizer=self.opt, gamma=0.94)
+        self.early.counter = 0
+        self.early.isToStop = False
 
 
 # def cross_validation(
