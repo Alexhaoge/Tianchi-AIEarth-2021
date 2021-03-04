@@ -47,7 +47,17 @@ class dataset_reshape:
         data_reindex=data.set_index(['lat', 'lon','month','year','mode'])
         data_set=xr.Dataset.from_dataframe(data_reindex)
         return(data_set)
-    
+    def data_frame(self,train_data):#data_set转换为dataframe且把不同模式多余年份删除
+        train=train_data.to_dataframe()
+        train=train.reset_index()
+        df = train.drop(train[(train['mode']< 20000)&(train.year>100)].index)
+        df=df.drop(df[(df['mode']//10000==5)&(df.year>140)].index)
+        return(df)
+    def delete_mode(self,df):#删除有缺失值的mode
+        dfnona=df[df['mode']!=60013]
+        for i in np.arange(60006,60010):
+            dfnona=dfnona[(dfnona['mode']!=i)]
+        return dfnona        
 if __name__ == "__main__":
     train_dir = '../tcdata/enso_round1_train_20210201'
     path_train=[]
