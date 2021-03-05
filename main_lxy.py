@@ -40,11 +40,17 @@ def load_data2():
     train_va2 = train2['va'][:, :12].values
     train_label2 = label2['nino'][:, 12:36].values
     dict_train = {
+        'sst':np.concatenate([train_sst,train_sst2]),
+        't300':np.concatenate([train_t300,train_t3002]),
+        'ua':np.concatenate([train_ua,train_ua2]),
+        'va': np.concatenate([train_va,train_va2]),
+        'label': np.concatenate([train_label,train_label2])}
+    '''dict_train = {
         'sst':train_sst,
         't300':train_t300,
         'ua':train_ua,
         'va': train_va,
-        'label': train_label}
+        'label': train_label}'''
     dict_valid = {
         'sst':train_sst2,
         't300':train_t3002,
