@@ -1,5 +1,6 @@
-from model.v2 import SolutionV2
 from model.v1 import SolutionV1
+from model.v2 import SolutionV2
+from model.v3 import Solutionv3
 import torch.nn as nn
 from torch import tensor
 
