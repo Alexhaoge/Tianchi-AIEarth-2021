@@ -40,6 +40,13 @@ def get_dataset(
         label_path = '/' + label_path
     train = xr.open_dataset(train_path)
     label = xr.open_dataset(label_path)
+
+    train_sst = train['sst'][:, :12].values  # (4645, 12, 24, 72)截取前12项
+    train_t300 = train['t300'][:, :12].values
+    train_ua = train['ua'][:, :12].values
+    train_va = train['va'][:, :12].values
+    train_label = label['nino'][:, 12:36].values
+    
     if name == 'cmip5':
         train = train[dict(year=slice(0, 2265))]
         label = label[dict(year=slice(0, 2265))]
