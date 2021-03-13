@@ -1,10 +1,33 @@
 import xarray as xr
 import numpy as np
-
 import torch
-from torch.utils.data import TensorDataset
+from torch.utils.data import TensorDataset, Dataset
 
-def get_dataset(
+
+def NCDataset(Dataset):
+    
+    def __init__(self, X: xr.Dataset, y: xr.Dataset, index_col: str = 'ym'):
+        """
+        Label should have 24 months more than features,
+        but they have the same start time.
+        """
+        assert X.sizes[index_col] + 24 == y.sizes[index_col]
+        super(NCDataset, self).__init__()
+        self.X = X
+        self.y = y
+        self.index_col = index_col
+
+    def __len__(self):
+        return self.X.sizes[self.index_col] - 11
+
+    def __getitem__(self, index):
+        arg_map = {self.index_col: list(range(index,index+12))}
+        label_arg_map = {self.index_col: list(range(index+12, index+36))}
+        return torch.Tensor(self.X.isel(**arg_map).values).permute(3,1,2,0),\
+            torch.Tensor(self.y.isel(**arg_map).values).permute(3,1,2,0)
+
+
+def get_dataset_old(
     name:str, 
     debug_mode: bool = False, 
     small: int = -1,
@@ -57,3 +80,7 @@ def get_dataset(
         torch.Tensor(train.to_array().data).permute(1,2,0,3,4),
         torch.Tensor(label.to_array().data).squeeze()
     )
+
+
+def comb_dropna():
+    pass

@@ -3,7 +3,7 @@ import numpy as np
 import traceback
 import argparse as arg
 from train_evaluate import Trainer
-from dataset import get_dataset
+from dataset import get_dataset_old as get_dataset
 import torch
 from torch.utils.data import DataLoader, random_split
 from model.model import Solution
