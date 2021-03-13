@@ -27,3 +27,7 @@ class SolutionV3(nn.Module):
             ua = conv3(ua)
         for conv4 in self.conv4:
             va = conv4(va)
+    
+    def infer(self, _input: torch.Tensor) -> torch.Tensor:
+        assert _input.shape[1] == 12 and _input.dim() == 5
+        return self.forward(_input)
