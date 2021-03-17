@@ -101,7 +101,7 @@ def get_dataset_new(
     if name != 'cmip5':
         start_i = 0
         for i in range(15):
-            if i in [6,7,8,9,13]:
+            if i+1 in [6,7,8,9,13]:
                 start_i += 151
                 continue
             len = 151 if small == -1 else small

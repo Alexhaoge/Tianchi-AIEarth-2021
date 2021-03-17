@@ -6,7 +6,7 @@ class SolutionV3(nn.Module):
     simpleSpatailTimeNN
     """
     def __init__(self, n_cnn_layer:int=1, kernals:list=[3], n_lstm_units:int=64):
-        super(simpleSpatailTimeNN, self).__init__()
+        super(SolutionV3, self).__init__()
         self.conv1 = nn.ModuleList([nn.Conv2d(in_channels=12, out_channels=12, kernel_size=i) for i in kernals]) 
         self.conv2 = nn.ModuleList([nn.Conv2d(in_channels=12, out_channels=12, kernel_size=i) for i in kernals])
         self.conv3 = nn.ModuleList([nn.Conv2d(in_channels=12, out_channels=12, kernel_size=i) for i in kernals])

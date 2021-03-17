@@ -47,8 +47,7 @@ class SolutionV2(nn.Module):
         
 
     def forward(self, _input: torch.Tensor) -> torch.Tensor:
-        out = self.convlstm(_input[:, :12, :, :, :])[
-            0][-1]  # (B, 12, hidden_dim, 24, 72)
+        out = self.convlstm(_input)[0][-1]  # (B, 12, hidden_dim, 24, 72)
         out2 = torch.empty((
             out.shape[0], out.shape[1], out.shape[2],
             out.shape[3]//self.pool.kernel_size[0],
