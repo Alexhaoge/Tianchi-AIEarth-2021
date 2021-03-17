@@ -205,4 +205,3 @@ for i in os.listdir(test_dir):
     if i.endswith('.npy'):
         x = np.load(test_dir + '/' + i)
         np.save('result/' + i, predict_test(x))
-        print(test_dir + '/' + i)
