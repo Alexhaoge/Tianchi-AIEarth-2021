@@ -15,51 +15,68 @@ def set_seed(seed = 427):
     torch.manual_seed(seed)
 
 #数据导入
+def split_month(array,size):#input shape: :,36,24,72
+    temp=array[:size,0:12,:,:]
+    temp=temp.reshape(size*12,24,72)
+    temp2=np.array([temp[i:i+12,:,:] for i in range(size*12-40)])
+    return temp2
+
+def split_month_label(array,size):#input shape: :,24
+    temp=array[:size,0:12]
+    temp=temp.reshape(size*12)
+    temp2=np.array([temp[i+12:i+36] for i in range(size*12-40)])
+    return temp2
+    
 def load_data2():
     # CMIP data    
-    train = xr.open_dataset('tcdata/enso_round1_train_20210201/CMIP_train.nc')
-    label = xr.open_dataset('tcdata/enso_round1_train_20210201/CMIP_label.nc')    
-   
-    train_sst = train['sst'][:, :12].values  # (4645, 12, 24, 72)截取前12项
-    train_t300 = train['t300'][:, :12].values
-    train_ua = train['ua'][:, :12].values
-    train_va = train['va'][:, :12].values
-    train_label = label['nino'][:, 12:36].values
+    size1=3000
+    train = xr.open_dataset('../tcdata/enso_round1_train_20210201/CMIP_train.nc')
+    label = xr.open_dataset('../tcdata/enso_round1_train_20210201/CMIP_label.nc')    
+    train_sst = train['sst'].values
+    train_sst= np.concatenate((train_sst[:151*5],train_sst[151*9:151*12],train_sst[151*13:]))  
+    train_sst=split_month(train_sst,size1)
+    train_t300 = train['t300'].values
+    train_t300= np.concatenate((train_t300[:151*5],train_t300[151*9:151*12],train_t300[151*13:]))
+    train_t300=split_month(train_t300,size1)
+    train_ua = train['ua'].values
+    train_ua= np.concatenate((train_ua[:151*5],train_ua[151*9:151*12],train_ua[151*13:])) 
+    train_ua=split_month(train_ua,size1)
+    train_va = train['va'].values
+    train_va= np.concatenate((train_va[:151*5],train_va[151*9:151*12],train_va[151*13:]))
+    train_va=split_month(train_va,size1)
+    train_label = label['nino'].values
+    train_label= np.concatenate((train_label[:151*5],train_label[151*9:151*12],train_label[151*13:]))
+    train_label=split_month_label(train_label,size1)
     
-    train_ua = np.nan_to_num(train_ua)#缺失值补0
-    train_va = np.nan_to_num(train_va)
-    train_t300 = np.nan_to_num(train_t300)
-    train_sst = np.nan_to_num(train_sst)
+    #train_ua = np.nan_to_num(train_ua)#缺失值补0
+    #train_va = np.nan_to_num(train_va)
+    #train_t300 = np.nan_to_num(train_t300)
+    #train_sst = np.nan_to_num(train_sst)
 
-    # SODA data    
-    train2 = xr.open_dataset('tcdata/enso_round1_train_20210201/SODA_train.nc')
-    label2 = xr.open_dataset('tcdata/enso_round1_train_20210201/SODA_label.nc')
-    train_sst2 = train2['sst'][:, :12].values  # (4645, 12, 24, 72)
-    train_t3002 = train2['t300'][:, :12].values
-    train_ua2 = train2['ua'][:, :12].values
-    train_va2 = train2['va'][:, :12].values
-    train_label2 = label2['nino'][:, 12:36].values
+    # SODA data  
+    size2=100
+    train2 = xr.open_dataset('../tcdata/enso_round1_train_20210201/SODA_train.nc')
+    label2 = xr.open_dataset('../tcdata/enso_round1_train_20210201/SODA_label.nc')
     
+    train_sst2 = train2['sst'].values  # (3890, 12, 24, 72)
+    train_sst2=split_month(train_sst2,size2)
+    train_t3002 = train2['t300'].values
+    train_t3002=split_month(train_t3002,size2)
+    train_ua2 = train2['ua'].values
+    train_ua2=split_month(train_ua2,size2)
+    train_va2 = train2['va'].values
+    train_va2=split_month(train_va2,size2)
+    train_label2 = label2['nino'].values
+    train_label2=split_month_label(train_label2,size2)
+
+    print('Train samples: {}, Valid samples: {}'.format(len(train_label), len(train_label2)))
 
     dict_train = {
-        'sst':np.concatenate([train_sst,train_sst2]),
-        't300':np.concatenate([train_t300,train_t3002]),
-        'ua':np.concatenate([train_ua,train_ua2]),
-        'va': np.concatenate([train_va,train_va2]),
-        'label': np.concatenate([train_label,train_label2])}
-    '''
-    dict_train = {
-        'sst':np.concatenate([train_sst,train_sst2]),
-        't300':np.concatenate([train_t300,train_t3002]),
-        'ua':np.concatenate([train_ua,train_ua2]),
-        'va': np.concatenate([train_va,train_va2]),
-        'label': np.concatenate([train_label,train_label2])}
-    '''dict_train = {
         'sst':train_sst,
         't300':train_t300,
         'ua':train_ua,
         'va': train_va,
-        'label': train_label}'''
+        'label': train_label}
     dict_valid = {
         'sst':train_sst2,
         't300':train_t3002,
@@ -69,7 +86,7 @@ def load_data2():
     train_dataset = EarthDataSet(dict_train)
     valid_dataset = EarthDataSet(dict_valid)
     return train_dataset, valid_dataset
-    
+
 class EarthDataSet(Dataset):
     def __init__(self, data):
         self.data = data
@@ -79,7 +96,6 @@ class EarthDataSet(Dataset):
 
     def __getitem__(self, idx):   
         return (self.data['sst'][idx], self.data['t300'][idx], self.data['ua'][idx], self.data['va'][idx]), self.data['label'][idx]
-    
 
 #模型
 class simpleSpatailTimeNN(nn.Module):
@@ -177,7 +193,6 @@ def train(model):
             loss = loss_fn(preds, label)
             loss.backward()
             optimizer.step()
-            print('Step: {}, Train Loss: {}'.format(step, loss))
     return model
 
 model= simpleSpatailTimeNN()
